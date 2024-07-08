@@ -16,29 +16,48 @@ function App() {
     const day = nowMonthFirstDate.getDay();
     // 몇일이지?
     let currentDate = nowMonthFirstDate.getDate();
-    const totalDateCurrentMonth = calMonthDay();
-    console.log(totalDateCurrentMonth);
+    const totalDateCurrentMonth = calMonthDay(0);
 
-    if(day !== 1) {
-
-    }
     // 현재 달의 달력
-    const calendar = [];
+    let calendar: number[][] = [];
     while(currentDate <= totalDateCurrentMonth) {
-      const week = createWeekCalendar(currentDate);
+      const week = createWeekCalendar(currentDate, day);
+      calendar.push(week);
       currentDate += 7;
-      console.log('달력의 일자', currentDate); 
     }
+    calendar = calendar.map((week, index) => {
+      return index === 0 ? findLastMonthDate(calendar[index]) : index === calendar.length - 1 ? findNextMonthDate(calendar[index]) : week;
+    })
+    console.log(calendar);
   }
 
-  const createWeekCalendar = (startDate: number) => {
-    return Array.from(new Array(7), (startDate, i) => (i + 1))
+  const findNextMonthDate = (week: number[]) => {
+    const totalDateCurrentMonth = calMonthDay(0);
+    const includeNextMonthDate = week.map(date => {
+      return date > totalDateCurrentMonth ? date - totalDateCurrentMonth : date;
+    })
+    return includeNextMonthDate;
   }
 
-  const calMonthDay = () => {
+  const findLastMonthDate = (week: number[]) => {
+    const totalDateLastMonth = calMonthDay(-1);
+    console.log(totalDateLastMonth);
+    const includeLastMonthDate = week.map((date) => {
+      return date < 1 ? date + totalDateLastMonth : date;
+    });
+    return includeLastMonthDate;
+  }
+
+  const createWeekCalendar = (startDate: number, day: number) => {
+    return Array.from(new Array(7), (startDate, i) => (i + 1)).map(date => date + startDate - 1 - day);
+  }
+
+  // index : 현재 달 기준으로 앞 또는 뒤로 이동
+  // 예시 : index: -2일때 현재 8월이면 구해지는 값은 6월
+  const calMonthDay = (index: number) => {
     const day1 = new Date();
     // 한 달에 며칠이 포함되어 있는가
-    const dates = new Date(day1.getFullYear(), day1.getMonth() + 1, 0).getDate();
+    const dates = new Date(day1.getFullYear(), day1.getMonth() + 1 + index, 0).getDate();
     return dates;
   }
 
