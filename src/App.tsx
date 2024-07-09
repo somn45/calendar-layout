@@ -1,10 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import styled from 'styled-components';
+import { getDaysInMonth } from 'date-fns';
+import Week from './Week';
 
-const Days = styled.div``;
+const MonthCalendar = styled.ul`
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+`;
 
 function App() {
+  const [calendar, setCalendar] = useState<number[][] | null>(null)
   useEffect(() => {
     createMonthDays();
   }, []);
@@ -16,7 +23,7 @@ function App() {
     const day = nowMonthFirstDate.getDay();
     // 몇일이지?
     let currentDate = nowMonthFirstDate.getDate();
-    const totalDateCurrentMonth = calMonthDay(0);
+    const totalDateCurrentMonth = getDaysInMonth(new Date(nowMonthFirstDate.getFullYear(), nowMonthFirstDate.getMonth()));
 
     // 현재 달의 달력
     let calendar: number[][] = [];
@@ -28,11 +35,11 @@ function App() {
     calendar = calendar.map((week, index) => {
       return index === 0 ? findLastMonthDate(calendar[index]) : index === calendar.length - 1 ? findNextMonthDate(calendar[index]) : week;
     })
-    console.log(calendar);
+    setCalendar(calendar);
   }
 
   const findNextMonthDate = (week: number[]) => {
-    const totalDateCurrentMonth = calMonthDay(0);
+    const totalDateCurrentMonth = getDaysInMonth(new Date(new Date().getFullYear(), new Date().getMonth()));
     const includeNextMonthDate = week.map(date => {
       return date > totalDateCurrentMonth ? date - totalDateCurrentMonth : date;
     })
@@ -40,8 +47,7 @@ function App() {
   }
 
   const findLastMonthDate = (week: number[]) => {
-    const totalDateLastMonth = calMonthDay(-1);
-    console.log(totalDateLastMonth);
+    const totalDateLastMonth = getDaysInMonth(new Date(new Date().getFullYear(), new Date().getMonth() - 1));
     const includeLastMonthDate = week.map((date) => {
       return date < 1 ? date + totalDateLastMonth : date;
     });
@@ -52,18 +58,15 @@ function App() {
     return Array.from(new Array(7), (startDate, i) => (i + 1)).map(date => date + startDate - 1 - day);
   }
 
-  // index : 현재 달 기준으로 앞 또는 뒤로 이동
-  // 예시 : index: -2일때 현재 8월이면 구해지는 값은 6월
-  const calMonthDay = (index: number) => {
-    const day1 = new Date();
-    // 한 달에 며칠이 포함되어 있는가
-    const dates = new Date(day1.getFullYear(), day1.getMonth() + 1 + index, 0).getDate();
-    return dates;
-  }
-
   return (
-    <div>
-    </div>
+    <section>
+      <h1>캘린더</h1>
+      <MonthCalendar>
+      {calendar?.map(week => (
+        <Week key={week[0]} week={week} />
+      ))}
+      </MonthCalendar>
+    </section>
   );
 }
 
